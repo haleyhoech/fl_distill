@@ -3,7 +3,7 @@
 #SBATCH --mail-user=haley.hoech@hhi.fraunhofer.de
 #SBATCH --output=out/%j.out
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=2
+#SBATCH --cpus-per-task=1
 #SBATCH --gpus=1
 
 
