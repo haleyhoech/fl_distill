@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH --mail-type=ALL
-#SBATCH --mail-user=felix.sattler@hhi.fraunhofer.de
+#SBATCH --mail-user=haley.hoech@hhi.fraunhofer.de
 #SBATCH --output=out/%j.out
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=16
+#SBATCH --cpus-per-task=2
 #SBATCH --gpus=1
 
 
@@ -20,7 +20,7 @@ hyperparameters=' [{
 	"balancedness" : [1.0],
 
 
-	"communication_rounds" : [50],
+	"communication_rounds" : [2],
 	"participation_rate" : [1.0],
 	"local_epochs" : [1],
 	"distill_epochs" : [10],
@@ -61,9 +61,9 @@ if [[ "$HOSTNAME" == *"vca"* ]]; then # Cluster
 
 else # Local
 
-	RESULTS_PATH="results/"
-	DATA_PATH="/home/sattler/Data/PyTorch/"
-	CHECKPOINT_PATH="checkpoints/"
+	RESULTS_PATH="results\"
+	DATA_PATH="C:\Users\hoech\Documents\data"
+	CHECKPOINT_PATH="checkpoints\"
 
 	python -u code/federated_learning.py --hp="$hyperparameters" --RESULTS_PATH="$RESULTS_PATH" --DATA_PATH="$DATA_PATH" --CHECKPOINT_PATH="$CHECKPOINT_PATH" $cmdargs
 
