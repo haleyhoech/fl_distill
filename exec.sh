@@ -61,9 +61,9 @@ if [[ "$HOSTNAME" == *"vca"* ]]; then # Cluster
 
 else # Local
 
-	RESULTS_PATH="results\"
-	DATA_PATH="C:\Users\hoech\Documents\data"
-	CHECKPOINT_PATH="checkpoints\"
+	RESULTS_PATH="results/"
+	DATA_PATH="~/Data/PyTorch/"
+	CHECKPOINT_PATH="checkpoints/"
 
 	python -u code/federated_learning.py --hp="$hyperparameters" --RESULTS_PATH="$RESULTS_PATH" --DATA_PATH="$DATA_PATH" --CHECKPOINT_PATH="$CHECKPOINT_PATH" $cmdargs
 
