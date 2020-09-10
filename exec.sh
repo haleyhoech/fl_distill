@@ -3,7 +3,7 @@
 #SBATCH --mail-user=haley.hoech@hhi.fraunhofer.de
 #SBATCH --output=out/%j.out
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=2
+#SBATCH --cpus-per-task=16
 #SBATCH --gpus=1
 
 
@@ -12,19 +12,19 @@ cmdargs=$1
 hyperparameters=' [{
 	"dataset" : ["cifar10"], 
 	"distill_dataset" : ["stl10"],
-	"net" : ["simclr_net_bn"],
+	"net" : ["lenet_cifar"],
 	
 
 	"n_clients" : [20],
-	"classes_per_client" : [0],
+	"classes_per_client" : [0.1],
 	"balancedness" : [1.0],
 
 
-	"communication_rounds" : [2],
-	"participation_rate" : [1.0],
-	"local_epochs" : [1],
+	"communication_rounds" : [50],
+	"participation_rate" : [0.4],
+	"local_epochs" : [20],
 	"distill_epochs" : [10],
-	"n_distill" : [1000], 
+	"n_distill" : [100000], 
 
 	
 	"batch_size" : [128],
