@@ -194,7 +194,7 @@ class Server(Device):
 
         if mode == "pate":
           hist = torch.sum(torch.stack([client.predict_(x) for client in clients]), dim=0)
-          #hist += torch.randn_like(hist)
+          hist += torch.randn_like(hist)
 
           amax = torch.argmax(hist, dim=1)
 
