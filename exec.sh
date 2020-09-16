@@ -16,7 +16,7 @@ hyperparameters=' [{
 	
 
 	"n_clients" : [20],
-	"classes_per_client" : [0.1],
+	"classes_per_client" : [3],
 	"balancedness" : [1.0],
 
 
