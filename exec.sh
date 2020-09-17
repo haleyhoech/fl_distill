@@ -10,13 +10,8 @@
 cmdargs=$1
 
 hyperparameters=' [{
-<<<<<<< HEAD
 	"dataset" : ["cifar10"], 
 	"distill_dataset" : ["stl10"],
-=======
-	"dataset" : ["mnist"], 
-	"distill_dataset" : ["emnist"],
->>>>>>> f6c8f47059f4cdbf9f577c25c02e4f5f0cd0eaac
 	"net" : ["lenet_cifar"],
 	
 
