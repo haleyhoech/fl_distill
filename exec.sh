@@ -33,7 +33,7 @@ hyperparameters=' [{
 	"only_linear" : [false],
 	
 
-	"pretrained" : [{"stl10" : "80EpochsSTL10.pth"}],
+	"pretrained" : [{"stl10" : "simclr_net_bn_stl10_80epochs.pth"}],
 
 	"save_model" : [null],
 	"log_frequency" : [-100],
