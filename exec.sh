@@ -20,7 +20,7 @@ hyperparameters=' [{
 	"balancedness" : [1.0],
 
 
-	"communication_rounds" : [20],
+	"communication_rounds" : [30],
 	"participation_rate" : [0.4],
 	"local_epochs" : [20],
 	"distill_epochs" : [10],
@@ -28,12 +28,12 @@ hyperparameters=' [{
 
 	
 	"batch_size" : [128],
-	"aggregation_mode" : ["FD", "FA", "FAD"],
+	"aggregation_mode" : ["FD"],
 	"distill_mode" : ["pate"],
 	"only_linear" : [false],
 	
 
-	"pretrained" : [null],
+	"pretrained" : [{"stl10" : "80EpochsSTL10.pth"}],
 
 	"save_model" : [null],
 	"log_frequency" : [-100],
