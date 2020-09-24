@@ -16,11 +16,11 @@ hyperparameters=' [{
 	
 
 	"n_clients" : [20],
-	"classes_per_client" : [0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000],
+	"classes_per_client" : [10000],
 	"balancedness" : [1.0],
 
 
-	"communication_rounds" : [50],
+	"communication_rounds" : [30],
 	"participation_rate" : [0.1, 0.2, 0.3, 0.4, 0.5, 0.6],
 	"local_epochs" : [20],
 	"distill_epochs" : [10],
