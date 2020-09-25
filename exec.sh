@@ -20,7 +20,7 @@ hyperparameters=' [{
 	"balancedness" : [1.0],
 
 
-	"communication_rounds" : [50],
+	"communication_rounds" : [10],
 	"participation_rate" : [0.4],
 	"local_epochs" : [20],
 	"distill_epochs" : [10],
@@ -32,12 +32,13 @@ hyperparameters=' [{
 	"distill_mode" : ["pate"],
 	"only_linear" : [false],
 	
+	"lr" : [0.1, 0.01, 0.001],
 
 	"pretrained" : [{"stl10" : "simclr_net_bn_stl10_80epochs.pth"}],
 
 	"save_model" : [null],
 	"log_frequency" : [-100],
-	"log_path" : ["trash/"],
+	"log_path" : ["lr_momentum/"],
 	"job_id" : [['$SLURM_JOB_ID']]}]'
 
 
