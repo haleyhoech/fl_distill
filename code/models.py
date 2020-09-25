@@ -203,7 +203,7 @@ def apply_gn(model):
             
         if isinstance(c, nn.BatchNorm2d):
             #print(n, c.num_features)
-            setattr(model, n, torch.nn.GroupNorm(num_groups=2, num_channels=c.num_features))  
+            setattr(model, n, torch.nn.GroupNorm(num_groups=4, num_channels=c.num_features))  
 
 
 
@@ -315,6 +315,21 @@ class simclrVGG11(nn.Module):
         return out
 
 
+
+class outlier_net(nn.Module):
+    def __init__(self):
+        super(outlier_net, self).__init__()
+        self.conv1 = nn.Conv2d(3, 8, 5, bias=False)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.conv2 = nn.Conv2d(8, 4, 5, bias=False)
+        self.fc1 = nn.Linear(4 * 5 * 5, 32, bias=False)
+        
+    def forward(self, x):
+        x = self.pool(F.relu(self.conv1(x)))
+        x = self.pool(F.relu(self.conv2(x)))
+        x = x.view(-1, 4 * 5 * 5)
+        x = self.fc1(x)
+        return x
 
 
 

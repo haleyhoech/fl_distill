@@ -16,7 +16,7 @@ hyperparameters=' [{
 	
 
 	"n_clients" : [20],
-	"classes_per_client" : [0.1],
+	"classes_per_client" : [100.0, 10.0, 10.0, 0.1, 0.01],
 	"balancedness" : [1.0],
 
 
@@ -29,16 +29,16 @@ hyperparameters=' [{
 	
 	"batch_size" : [128],
 	"aggregation_mode" : ["FD"],
-	"distill_mode" : ["pate"],
+	"distill_mode" : ["regular", "outlier_score"],
 	"only_linear" : [false],
 	
 	"lr" : [0.1, 0.01, 0.001],
 
-	"pretrained" : [{"stl10" : "simclr_net_bn_stl10_80epochs.pth"}],
+	"pretrained" : [null, {"stl10" : "simclr_net_bn_stl10_80epochs.pth"}],
 
 	"save_model" : [null],
 	"log_frequency" : [-100],
-	"log_path" : ["lr_momentum/"],
+	"log_path" : ["outlier_score_cifar_simclrnet_bn/"],
 	"job_id" : [['$SLURM_JOB_ID']]}]'
 
 
