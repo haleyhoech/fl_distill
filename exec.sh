@@ -16,13 +16,13 @@ hyperparameters=' [{
 	"distill_dataset" : ["stl10"],
 	"net" : ["lenet_cifar"],
 
-	"n_clients" : [20],
+	"n_clients" : [5],
 	"classes_per_client" : [0.1],
-	"communication_rounds" : [10],
+	"communication_rounds" : [1],
 	"participation_rate" : [0.4],
 	
-	"local_epochs" : [20],
-	"distill_epochs" : [10],
+	"local_epochs" : [1],
+	"distill_epochs" : [1],
 	"n_distill" : [100000],
 	"local_optimizer" : [["Adam", {"lr" : 0.002}]],
 	"distill_optimizer" : [["Adam", {"lr" : 0.001}]],
