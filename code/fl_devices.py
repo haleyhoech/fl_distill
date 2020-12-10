@@ -295,6 +295,23 @@ class Server(Device):
             w += weight.detach()
           y = y / w
 
+        if mode == "outlier_score_smooth":
+          y = torch.zeros([x.shape[0], 10], device="cuda")
+          w = torch.zeros([x.shape[0], 1], device="cuda")
+          for i, client in enumerate(clients):
+            y_p = client.predict(x)
+            #weight = torch.Tensor(client.predict_outlier_score_svm(x).reshape(-1,1)).cuda()
+
+            #print(client.label_counts)
+            #for i,j in zip(_,weight):
+            #  print(i, j)
+            #exit()
+
+            #y += (y_p*weight).detach()
+            #w += weight.detach()
+
+            y += gaussian_filter1d(y_p, 3, mode="wrap")
+          y = y / w
 
         if mode == "pate":
           hist = torch.sum(torch.stack([client.predict_(x) for client in clients]), dim=0)
