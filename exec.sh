@@ -9,7 +9,7 @@
 
 cmdargs=$1
 
-hpo=true
+hpo=false
 
 hyperparameters=' [{
 	"dataset" : ["cifar10"],
@@ -18,19 +18,25 @@ hyperparameters=' [{
 
 	"n_clients" : [20],
 	"classes_per_client" : [0.1],
-	"balancedness" : [1.0],
-
 	"communication_rounds" : [10],
 	"participation_rate" : [0.4],
+	
 	"local_epochs" : [20],
 	"distill_epochs" : [10],
 	"n_distill" : [100000],
+	"local_optimizer" : [["Adam", {"lr" : 0.002}]],
+	"distill_optimizer" : [["Adam", {"lr" : 0.001}]],
 
+	"fallback" : [true],
+	"lambda_outlier" : [1.0],
+	"lambda_fedprox" : [0.001],
+	"only_train_final_outlier_layer" : [false],
+	"warmup_type": ["constant"],
+	"mixture_coefficients" : [{"base":0.5, "public":0.5}],
 	"batch_size" : [128],
-	"aggregation_mode" : ["FD"],
 	"distill_mode" : ["pate"],
-	"only_linear" : [false],
-	"lr" : [0.1],
+
+	"aggregation_mode" : ["FD"],
 
 	"pretrained" : ["simclr_resnet8_stl10_100epochs.pth"],
 
