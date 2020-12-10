@@ -3,12 +3,17 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 from torchvision.models import resnet18
+from torchvision.models.resnet import ResNet, BasicBlock
 import numpy as np
 import torchvision
+
+import logging
+logger = logging.getLogger(__name__)
 
 from functools import partial
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
 
 class VGG(nn.Module):
 
@@ -25,6 +30,14 @@ class VGG(nn.Module):
             nn.ReLU(True),
             nn.Linear(size, out),
         )
+
+        self.binary = nn.Sequential(
+            #nn.Dropout(),
+            nn.Linear(size, size),
+            nn.ReLU(True),
+            #nn.Dropout(),
+            nn.Linear(size, 2),
+        )
          # Initialize weights
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -32,10 +45,17 @@ class VGG(nn.Module):
                 m.weight.data.normal_(0, np.sqrt(2. / n))
                 m.bias.data.zero_()
 
+
     def forward(self, x):
         x = self.features(x)
         x = x.view(x.size(0), -1)
         x = self.classifier(x)
+        return x
+
+    def forward_binary(self, x):
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
+        x = self.binary(x)
         return x
 
     def make_layers(self, cfg, batch_norm=False):
@@ -55,6 +75,9 @@ class VGG(nn.Module):
 
 def vgg11s():
     return VGG([32, 'M', 64, 'M', 128, 128, 'M', 128, 128, 'M', 128, 128, 'M'], size=128)
+
+def vgg11():
+    return VGG([64, 'M', 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'])
   
 def vgg16():
     return VGG([64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M'])
@@ -159,6 +182,7 @@ class lenet_cifar(nn.Module):
         self.fc1 = nn.Linear(16 * 5 * 5, 120)
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 10)
+        self.binary = nn.Linear(84, 2)
 
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
@@ -169,6 +193,39 @@ class lenet_cifar(nn.Module):
         x = self.fc3(x)
         return x
 
+    def forward_binary(self, x):
+        x = self.pool(F.relu(self.conv1(x)))
+        x = self.pool(F.relu(self.conv2(x)))
+        x = x.view(-1, 16 * 5 * 5)
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.binary(x)
+        return x
+
+
+
+class lenet_large(nn.Module):
+    def __init__(self):
+        super(lenet_large, self).__init__()
+        self.conv1 = nn.Conv2d(3, 20, 5)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.conv2 = nn.Conv2d(20, 50, 5)
+        self.fc1 = nn.Linear(50 * 5 * 5, 512)
+        self.fc2 = nn.Linear(512, 10)
+
+    def f(self, x):
+        x = self.pool(F.relu(self.conv1(x)))
+        x = self.pool(F.relu(self.conv2(x)))
+        x = x.view(-1, 50 * 5 * 5)
+        x = F.relu(self.fc1(x))
+        return x
+
+    def forward(self, x):
+        x = self.f(x)
+        x = self.fc2(x)
+        return x
+
+
 
 class lenet_mnist(torch.nn.Module):
     def __init__(self):
@@ -176,17 +233,29 @@ class lenet_mnist(torch.nn.Module):
         self.conv1 = torch.nn.Conv2d(1, 6, 5)
         self.pool = torch.nn.MaxPool2d(2, 2)
         self.conv2 = torch.nn.Conv2d(6, 16, 5)
-        self.fc1 = torch.nn.Linear(16 * 4 * 4, 120)
+        self.fc1 = torch.nn.Linear(16 * 5 * 5, 120)
         self.fc2 = torch.nn.Linear(120, 84)
-        self.fc3 = torch.nn.Linear(84, 62)
+        self.fc3 = torch.nn.Linear(84, 10)
+        self.binary = torch.nn.Linear(84, 2)
 
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
-        x = x.view(-1, 16 * 4 * 4)
+        x = x.view(-1, 16 * 5 * 5)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
+        return x
+
+    def forward_binary(self, x, only_train_final_outlier_layer=False):
+        x = self.pool(F.relu(self.conv1(x)))
+        x = self.pool(F.relu(self.conv2(x)))
+        x = x.view(-1, 16 * 5 * 5)
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        if only_train_final_outlier_layer:
+            x = x.detach()
+        x = self.binary(x)
         return x
 
 
@@ -206,13 +275,16 @@ def apply_gn(model):
             setattr(model, n, torch.nn.GroupNorm(num_groups=4, num_channels=c.num_features))  
 
 
+def resnet8():
+    return ResNet(BasicBlock, [1,1,1,1], num_classes=10)
+
 
 class Model(nn.Module):
     def __init__(self, feature_dim=128, group_norm=False):
         super(Model, self).__init__()
 
         self.f = []
-        for name, module in resnet18().named_children():
+        for name, module in resnet8().named_children():
             if name == 'conv1':
                 module = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
             if not isinstance(module, nn.Linear) and not isinstance(module, nn.MaxPool2d):
@@ -233,14 +305,17 @@ class Model(nn.Module):
         return F.normalize(feature, dim=-1), F.normalize(out, dim=-1)
 
 
-class simclr_net_bn(nn.Module):
+class resnet8_bn(nn.Module):
     def __init__(self, num_class=10, pretrained_path=None, group_norm=False):
-        super(simclr_net_bn, self).__init__()
+        super(resnet8_bn, self).__init__()
 
         # encoder
         self.f = Model(group_norm=group_norm).f
         # classifier
         self.fc = nn.Linear(512, num_class, bias=True)
+        self.binary = nn.Linear(512, 2, bias=True)
+
+
         if pretrained_path:
             self.load_state_dict(torch.load(pretrained_path, map_location='cpu'), strict=False)
 
@@ -250,10 +325,18 @@ class simclr_net_bn(nn.Module):
         out = self.fc(feature)
         return out
 
+    def forward_binary(self, x):
+        x = self.f(x)
+        #x = x.detach()
+        feature = torch.flatten(x, start_dim=1)
+        out = self.binary(feature)
+        return out
 
-class simclr_net_gn(nn.Module):
+
+
+class resnet8_gn(nn.Module):
     def __init__(self, num_class=10, pretrained_path=None, group_norm=True):
-        super(simclr_net_gn, self).__init__()
+        super(resnet8_gn, self).__init__()
 
         # encoder
         self.f = Model(group_norm=group_norm).f
@@ -334,30 +417,58 @@ class outlier_net(nn.Module):
 
 
 
+
+
+class Autoencoder(nn.Module):
+    def __init__(self):
+        super(Autoencoder, self).__init__()
+        
+        self.f = nn.Sequential(nn.Linear(512, 128, bias=True), 
+                                nn.LeakyReLU(inplace=True), 
+                                nn.Linear(128, 32, bias=True),
+                                nn.LeakyReLU(inplace=True),
+                               nn.Linear(32, 128, bias=True),
+                                nn.LeakyReLU(inplace=True),
+                               nn.Linear(128, 512, bias=True))  
+        
+    def forward(self, x):
+        return self.f(x)
+    
+    def get_ae_loss(self, x):
+        x_ae = self.f(x)  
+
+        return torch.sum((x_ae - x) ** 2, dim=1)
+
+
+
+
+
+
 def get_model(model):
 
   return  { "vgg16" : (vgg16, optim.SGD, {"lr":0.04, "momentum":0.9, "weight_decay":5e-5}),
             "vgg11s" : (vgg11s, optim.SGD, {"lr":0.04, "momentum":0.9, "weight_decay":5e-5}),
-              "lenet_cifar" : (lenet_cifar, optim.SGD, {"lr":0.01, "momentum" : 0.9, "weight_decay":0.0}),
+            "vgg11" : (vgg11, optim.SGD, {"lr":0.01, "momentum":0.9, "weight_decay":5e-5}),
+              "lenet_cifar" : (lenet_cifar, optim.Adam, {"lr":0.001, "weight_decay":0.0}),
+               "lenet_large" : (lenet_large, optim.SGD, {"lr":0.01, "momentum" : 0.9, "weight_decay":0.0}),
               "lenet_mnist" : (lenet_mnist, optim.Adam, {"lr":0.001, "weight_decay":0.0}),
               "mobilenetv2" : (mobilenetv2, optim.SGD, {"lr" : 0.01, "momentum" :0.9, "weight_decay" :5e-4}),
               "mobilenetv2s" : (mobilenetv2s, optim.SGD, {"lr" : 0.01, "momentum" :0.9, "weight_decay" :5e-4}),
               "mobilenetv2xs" : (mobilenetv2xs, optim.SGD, {"lr" : 0.01, "momentum" :0.9, "weight_decay" :5e-4}),
               "mobilenetv2_gn" : (mobilenetv2_gn, optim.SGD, {"lr" : 0.01, "momentum" :0.9, "weight_decay" :5e-4}),
-              "simclr_net_gn" : (simclr_net_gn, optim.SGD, {"lr" : 0.1, "momentum" : 0.9, "weight_decay" :5e-4}),
-                "simclr_net_bn" : (simclr_net_bn, optim.SGD, {"lr" : 0.1, "momentum" : 0.9, "weight_decay" :5e-4}),
+              "resnet8_gn" : (resnet8_gn, optim.SGD, {"lr" : 0.1, "momentum" : 0.9, "weight_decay" :5e-4}),
+                "resnet8_bn" : (resnet8_bn, optim.SGD, {"lr" : 0.1}),
                     "simclr_vgg11" : (simclrVGG11, optim.Adam, {"lr" : 0.001, "weight_decay" :5e-4})
           }[model]
 
 
 def print_model(model):
   n = 0
-  print("Model:")
+  logger.debug("Model:")
   for key, value in model.named_parameters():
-    print(' -', '{:30}'.format(key), list(value.shape), "Requires Grad:", value.requires_grad)
+    logger.debug(f" - {key:30} \t {list(value.shape)} Requires Grad: {value.requires_grad}")
     n += value.numel()
-  print("Total number of Parameters: ", n) 
-  print()
+  logger.debug(f"Total number of Parameters: {n}") 
 
 
 
