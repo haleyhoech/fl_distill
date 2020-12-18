@@ -12,7 +12,7 @@ np.set_printoptions(precision=4, suppress=True)
 
 import logging
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.ERROR)
+logging.basicConfig(level=logging.DEBUG)
 
 import gc
 
