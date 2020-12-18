@@ -126,7 +126,7 @@ def run_experiment(xp, xp_count, n_experiments, args, seed=0):
     
     if hp["aggregation_mode"] in ["FD", "FAD", "FAD+P", "FAD+S", "FAD+P+S"]:
 
-      distill_mode = hp["distill_mode"] if hp["aggregation_mode"] in ["FD+S", "FAD+S", "FAD+P+S"] else "mean_logits"
+      distill_mode = hp["distill_mode"] if hp["aggregation_mode"] in ["FD", "FD+S", "FAD+S", "FAD+P+S"] else "mean_logits"
       distill_stats = server.distill(participating_clients, hp["distill_epochs"], mode=distill_mode, acc0=averaging_stats["accuracy"], fallback=hp["fallback"])
       xp.log({"distill_{}".format(key) : value for key, value in distill_stats.items()})
 

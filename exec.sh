@@ -18,11 +18,11 @@ hyperparameters=' [{
 
 	"n_clients" : [5],
 	"classes_per_client" : [0.1],
-	"communication_rounds" : [1],
-	"participation_rate" : [0.4],
+	"communication_rounds" : [2],
+	"participation_rate" : [1.0],
 	
-	"local_epochs" : [1],
-	"distill_epochs" : [1],
+	"local_epochs" : [2],
+	"distill_epochs" : [2],
 	"n_distill" : [100000],
 	"local_optimizer" : [["Adam", {"lr" : 0.002}]],
 	"distill_optimizer" : [["Adam", {"lr" : 0.001}]],

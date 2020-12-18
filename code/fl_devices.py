@@ -248,19 +248,23 @@ class Server(Device):
           y = y / w
 
         if mode == "pate":
-          hist = torch.sum(torch.stack([client.predict_(x) for client in clients]), dim=0)
+          hist = torch.sum(torch.stack([client.predict(x) for client in clients]), dim=0)
+          print(hist.shape)
           hist += torch.randn_like(hist)
 
           amax = torch.argmax(hist, dim=1)
           y = torch.zeros_like(hist)
           y[torch.arange(hist.shape[0]),amax] = 1
+          #print('y', y)#hh added this
 
         if mode == "pate_up":
           y = torch.mean(torch.stack([client.predict_max(x) for client in clients]), dim=0)
+          print('y', y)#hh added this
 
 
         self.optimizer.zero_grad()
         y_ = nn.Softmax(1)(self.model(x))
+        #print('y_', y_) #hh added this 
 
         loss = kulbach_leibler_divergence(y_,y.detach())
 
